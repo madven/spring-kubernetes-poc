@@ -47,9 +47,7 @@ public class GreetingController {
 	@GetMapping("/")
 	public String load() {
 
-//		RestTemplate restTemplate = new RestTemplate();
-
-		String serviceList = "";
+		StringBuilder serviceList = new StringBuilder();
 		if (discoveryClient != null) {
 			List<String> services = this.discoveryClient.getServices();
 
@@ -57,12 +55,21 @@ public class GreetingController {
 
 				List<ServiceInstance> instances = this.discoveryClient.getInstances(service);
 
-				serviceList += ("[" + service + " : " + ((!CollectionUtils.isEmpty(instances)) ? instances.size() : 0) + " instances ]");
+				serviceList
+						.append("[")
+						.append(service)
+						.append(" : ")
+						.append((!CollectionUtils.isEmpty(instances)) ? instances.size() : 0).append(" instances");
+
+				if(!CollectionUtils.isEmpty(instances)){
+					serviceList.append(" (");
+					instances.forEach(i -> serviceList.append(i.getUri()).append(", "));
+					serviceList.append(")] ");
+				}
 			}
 		}
 
-		return serviceList;
-//		return "Up";
+		return serviceList.toString();
 	}
 
 }

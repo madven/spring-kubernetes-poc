@@ -1,0 +1,80 @@
+##################################################################################################
+# Main  service receiving response from ingress 
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: greeting-service
+  labels:
+    app: greeting-service
+spec:
+  ports:
+  - port: 80
+#  - port: 8080
+    name: http
+    targetPort: 8080
+  selector:
+    app: greeting-service
+  type: LoadBalancer
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: greeting-service-deployment-v1
+spec:
+  replicas: 1
+  template: # template for the pods
+    metadata:
+      labels:
+        app: greeting-service
+        version: v1
+    spec:
+      containers:
+      - name: greeting-service
+        image: selcukc/greeting-service:1.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+---
+##################################################################################################
+# services being called by main service
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: name-service
+  labels:
+    app: name-service
+spec:
+  ports:
+  - port: 80
+    name: http
+    targetPort: 8080
+  selector:
+    app: name-service
+  type: NodePort
+#  - port: 80
+#    name: http
+#    targetPort: 8080
+#  selector:
+#    app: greeting-service
+#  type: LoadBalancer
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: name-service-deployment-v1
+spec:
+  replicas: 3
+  template: # template for the pods
+    metadata:
+      labels:
+        app: name-service
+        version: v1
+    spec:
+      containers:
+      - name: name-service
+        image: selcukc/name-service:1.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080

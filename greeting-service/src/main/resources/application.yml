@@ -5,6 +5,24 @@ spring:
 server:
   port: 8080
 
+eureka:
+  instance:
+    instanceId: ${spring.application.name}:${random.value}
+    preferIpAddress: true
+  client:
+    healthcheck:
+      enabled: true
+    enabled: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://eureka:admin@eureka-server/eureka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
 #backend:
 #  ribbon:
 #    eureka:
@@ -23,4 +41,8 @@ feign:
         connectTimeout: 5000
         readTimeout: 5000
   hystrix:
+    enabled: true
+
+hystrix:
+  metrics:
     enabled: true

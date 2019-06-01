@@ -1,17 +1,22 @@
 spring:
   application:
-    name: name-service
+    name: dashboard
 
 server:
-  port: 8080
+  port: 8070
+
+turbine:
+  aggregator:
+    clusterConfig: GREETING-SERVICE
+  appConfig: greeting-service
+#http://greeting-service/actuator/hystrix.stream
+#http://dashboard/turbine.stream?cluster=GREETING-SERVICE
 
 eureka:
   instance:
     instanceId: ${spring.application.name}:${random.value}
     preferIpAddress: true
   client:
-    healthcheck:
-      enabled: true
     enabled: true
     register-with-eureka: true
     service-url:

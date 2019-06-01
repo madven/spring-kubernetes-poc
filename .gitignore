@@ -2,6 +2,8 @@ HELP.md
 /target/
 greeting-service/target/
 name-service/target/
+dashboard/target/
+eureka-server/target/
 !.mvn/wrapper/maven-wrapper.jar
 
 ### STS ###

@@ -62,6 +62,7 @@ elif [[ $i -eq 1 ]]; then
 echo "${green}------------------ workload-inject delete ------------------${reset}"
 kubectl delete -f istio-gateway.yaml
 kubectl delete -f workload-inject.yaml
+kubectl delete -f workload.yaml
 #kubectl delete -f ~/yazilim/other/tools/istio-1.1.7/install/kubernetes/istio-demo-auth.yaml
 echo "${green}------------------ workload-inject apply ------------------${reset}"
 #kubectl apply -f ~/yazilim/other/tools/istio-1.1.7/install/kubernetes/istio-demo-auth.yaml

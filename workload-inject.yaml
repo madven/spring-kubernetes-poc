@@ -1,0 +1,350 @@
+##################################################################################################
+# Main  service receiving response from ingress 
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: greeting-service
+  labels:
+    app: greeting-service
+spec:
+  ports:
+  - port: 80
+#  - port: 8080
+    name: http
+    targetPort: 8080
+  selector:
+    app: greeting-service
+  type: NodePort
+#  type: LoadBalancer
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: greeting-service-deployment-v1
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/status: '{"version":"6d77a461287c770db12d16aef2e2de86a7dd0072f742222302ba7708e1a46794","initContainers":["istio-init"],"containers":["istio-proxy"],"volumes":["istio-envoy","istio-certs"],"imagePullSecrets":null}'
+      creationTimestamp: null
+      labels:
+        app: greeting-service
+        version: v1
+    spec:
+      containers:
+      - image: selcukc/greeting-service:1.0
+        imagePullPolicy: Always
+        name: greeting-service
+        ports:
+        - containerPort: 8080
+        resources: {}
+      - args:
+        - proxy
+        - sidecar
+        - --domain
+        - $(POD_NAMESPACE).svc.cluster.local
+        - --configPath
+        - /etc/istio/proxy
+        - --binaryPath
+        - /usr/local/bin/envoy
+        - --serviceCluster
+        - greeting-service.$(POD_NAMESPACE)
+        - --drainDuration
+        - 45s
+        - --parentShutdownDuration
+        - 1m0s
+        - --discoveryAddress
+        - istio-pilot.istio-system:15011
+        - --zipkinAddress
+        - zipkin.istio-system:9411
+        - --connectTimeout
+        - 10s
+        - --proxyAdminPort
+        - "15000"
+        - --concurrency
+        - "2"
+        - --controlPlaneAuthPolicy
+        - MUTUAL_TLS
+        - --statusPort
+        - "15020"
+        - --applicationPorts
+        - "8080"
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: INSTANCE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: ISTIO_META_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: ISTIO_META_CONFIG_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: ISTIO_META_INTERCEPTION_MODE
+          value: REDIRECT
+        - name: ISTIO_METAJSON_LABELS
+          value: |
+            {"app":"greeting-service","version":"v1"}
+        image: docker.io/istio/proxyv2:1.1.7
+        imagePullPolicy: IfNotPresent
+        name: istio-proxy
+        ports:
+        - containerPort: 15090
+          name: http-envoy-prom
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 30
+          httpGet:
+            path: /healthz/ready
+            port: 15020
+          initialDelaySeconds: 1
+          periodSeconds: 2
+        resources:
+          limits:
+            cpu: "2"
+            memory: 1Gi
+          requests:
+            cpu: 10m
+            memory: 40Mi
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsUser: 1337
+        volumeMounts:
+        - mountPath: /etc/istio/proxy
+          name: istio-envoy
+        - mountPath: /etc/certs/
+          name: istio-certs
+          readOnly: true
+      initContainers:
+      - args:
+        - -p
+        - "15001"
+        - -u
+        - "1337"
+        - -m
+        - REDIRECT
+        - -i
+        - '*'
+        - -x
+        - ""
+        - -b
+        - "8080"
+        - -d
+        - "15020"
+        image: docker.io/istio/proxy_init:1.1.7
+        imagePullPolicy: IfNotPresent
+        name: istio-init
+        resources:
+          limits:
+            cpu: 100m
+            memory: 50Mi
+          requests:
+            cpu: 10m
+            memory: 10Mi
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+          runAsNonRoot: false
+          runAsUser: 0
+      volumes:
+      - emptyDir:
+          medium: Memory
+        name: istio-envoy
+      - name: istio-certs
+        secret:
+          optional: true
+          secretName: istio.default
+status: {}
+---
+##################################################################################################
+# services being called by main service
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: name-service
+  labels:
+    app: name-service
+spec:
+  ports:
+  - port: 80
+    name: http
+    targetPort: 8081
+  selector:
+    app: name-service
+  type: NodePort
+#  - port: 80
+#    name: http
+#    targetPort: 8081
+#  selector:
+#    app: greeting-service
+#  type: LoadBalancer
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: name-service-deployment-v1
+spec:
+  replicas: 2
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/status: '{"version":"6d77a461287c770db12d16aef2e2de86a7dd0072f742222302ba7708e1a46794","initContainers":["istio-init"],"containers":["istio-proxy"],"volumes":["istio-envoy","istio-certs"],"imagePullSecrets":null}'
+      creationTimestamp: null
+      labels:
+        app: name-service
+        version: v1
+    spec:
+      containers:
+      - image: selcukc/name-service:1.0
+        imagePullPolicy: Always
+        name: name-service
+        ports:
+        - containerPort: 8081
+        resources: {}
+      - args:
+        - proxy
+        - sidecar
+        - --domain
+        - $(POD_NAMESPACE).svc.cluster.local
+        - --configPath
+        - /etc/istio/proxy
+        - --binaryPath
+        - /usr/local/bin/envoy
+        - --serviceCluster
+        - name-service.$(POD_NAMESPACE)
+        - --drainDuration
+        - 45s
+        - --parentShutdownDuration
+        - 1m0s
+        - --discoveryAddress
+        - istio-pilot.istio-system:15011
+        - --zipkinAddress
+        - zipkin.istio-system:9411
+        - --connectTimeout
+        - 10s
+        - --proxyAdminPort
+        - "15000"
+        - --concurrency
+        - "2"
+        - --controlPlaneAuthPolicy
+        - MUTUAL_TLS
+        - --statusPort
+        - "15020"
+        - --applicationPorts
+        - "8081"
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: INSTANCE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: ISTIO_META_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: ISTIO_META_CONFIG_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: ISTIO_META_INTERCEPTION_MODE
+          value: REDIRECT
+        - name: ISTIO_METAJSON_LABELS
+          value: |
+            {"app":"name-service","version":"v1"}
+        image: docker.io/istio/proxyv2:1.1.7
+        imagePullPolicy: IfNotPresent
+        name: istio-proxy
+        ports:
+        - containerPort: 15090
+          name: http-envoy-prom
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 30
+          httpGet:
+            path: /healthz/ready
+            port: 15020
+          initialDelaySeconds: 1
+          periodSeconds: 2
+        resources:
+          limits:
+            cpu: "2"
+            memory: 1Gi
+          requests:
+            cpu: 10m
+            memory: 40Mi
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsUser: 1337
+        volumeMounts:
+        - mountPath: /etc/istio/proxy
+          name: istio-envoy
+        - mountPath: /etc/certs/
+          name: istio-certs
+          readOnly: true
+      initContainers:
+      - args:
+        - -p
+        - "15001"
+        - -u
+        - "1337"
+        - -m
+        - REDIRECT
+        - -i
+        - '*'
+        - -x
+        - ""
+        - -b
+        - "8081"
+        - -d
+        - "15020"
+        image: docker.io/istio/proxy_init:1.1.7
+        imagePullPolicy: IfNotPresent
+        name: istio-init
+        resources:
+          limits:
+            cpu: 100m
+            memory: 50Mi
+          requests:
+            cpu: 10m
+            memory: 10Mi
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+          runAsNonRoot: false
+          runAsUser: 0
+      volumes:
+      - emptyDir:
+          medium: Memory
+        name: istio-envoy
+      - name: istio-certs
+        secret:
+          optional: true
+          secretName: istio.default
+status: {}
+---

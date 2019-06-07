@@ -15,8 +15,8 @@ import org.springframework.web.client.RestTemplate;
  */
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableCircuitBreaker
 @EnableFeignClients
+@EnableCircuitBreaker
 @RibbonClient(name = "name-service", configuration = RibbonConfiguration.class)
 public class GreetingServiceApplication {
 

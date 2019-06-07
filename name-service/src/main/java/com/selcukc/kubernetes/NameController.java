@@ -1,8 +1,6 @@
 package com.selcukc.kubernetes;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,15 +9,14 @@ import org.springframework.web.bind.annotation.RestController;
  * Name service controller.
  */
 @RestController
+@Slf4j
 public class NameController {
-
-	private static final Logger LOG = LoggerFactory.getLogger(NameController.class);
 
 	private final String hostName = System.getenv("HOSTNAME");
 
 	@RequestMapping("/")
 	public String ribbonPing() {
-		LOG.info("Ribbon ping");
+		log.info("Ribbon ping");
 		return this.hostName;
 	}
 
@@ -30,10 +27,8 @@ public class NameController {
 	 * @return Host name.
 	 */
 	@RequestMapping("/name")
-	public String getName(
-			@RequestParam(value = "delay", defaultValue = "0") int delayValue) {
-		LOG.info(String.format("Returning a name '%s' with a delay '%d'", this.hostName,
-				delayValue));
+	public String getName(@RequestParam(value = "delay", defaultValue = "0") int delayValue) {
+		log.info(String.format("Returning a name '%s' with a delay '%d'", this.hostName, delayValue));
 		delay(delayValue);
 		return this.hostName;
 	}

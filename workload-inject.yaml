@@ -29,7 +29,7 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/status: '{"version":"6d77a461287c770db12d16aef2e2de86a7dd0072f742222302ba7708e1a46794","initContainers":["istio-init"],"containers":["istio-proxy"],"volumes":["istio-envoy","istio-certs"],"imagePullSecrets":null}'
+        sidecar.istio.io/status: '{"version":"f5ccf91fad7f2d056f204a075aff1128670ca6997fecdeccaf7a2af6a498558c","initContainers":["istio-init"],"containers":["istio-proxy"],"volumes":["istio-envoy","istio-certs"],"imagePullSecrets":null}'
       creationTimestamp: null
       labels:
         app: greeting-service
@@ -58,7 +58,7 @@ spec:
         - --parentShutdownDuration
         - 1m0s
         - --discoveryAddress
-        - istio-pilot.istio-system:15011
+        - istio-pilot.istio-system:15010
         - --zipkinAddress
         - zipkin.istio-system:9411
         - --connectTimeout
@@ -68,7 +68,7 @@ spec:
         - --concurrency
         - "2"
         - --controlPlaneAuthPolicy
-        - MUTUAL_TLS
+        - NONE
         - --statusPort
         - "15020"
         - --applicationPorts
@@ -118,8 +118,8 @@ spec:
             cpu: "2"
             memory: 1Gi
           requests:
-            cpu: 10m
-            memory: 40Mi
+            cpu: 100m
+            memory: 128Mi
         securityContext:
           readOnlyRootFilesystem: true
           runAsUser: 1337
@@ -206,7 +206,7 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/status: '{"version":"6d77a461287c770db12d16aef2e2de86a7dd0072f742222302ba7708e1a46794","initContainers":["istio-init"],"containers":["istio-proxy"],"volumes":["istio-envoy","istio-certs"],"imagePullSecrets":null}'
+        sidecar.istio.io/status: '{"version":"f5ccf91fad7f2d056f204a075aff1128670ca6997fecdeccaf7a2af6a498558c","initContainers":["istio-init"],"containers":["istio-proxy"],"volumes":["istio-envoy","istio-certs"],"imagePullSecrets":null}'
       creationTimestamp: null
       labels:
         app: name-service
@@ -235,7 +235,7 @@ spec:
         - --parentShutdownDuration
         - 1m0s
         - --discoveryAddress
-        - istio-pilot.istio-system:15011
+        - istio-pilot.istio-system:15010
         - --zipkinAddress
         - zipkin.istio-system:9411
         - --connectTimeout
@@ -245,7 +245,7 @@ spec:
         - --concurrency
         - "2"
         - --controlPlaneAuthPolicy
-        - MUTUAL_TLS
+        - NONE
         - --statusPort
         - "15020"
         - --applicationPorts
@@ -295,8 +295,8 @@ spec:
             cpu: "2"
             memory: 1Gi
           requests:
-            cpu: 10m
-            memory: 40Mi
+            cpu: 100m
+            memory: 128Mi
         securityContext:
           readOnlyRootFilesystem: true
           runAsUser: 1337

@@ -30,7 +30,7 @@ while getopts "gnih" arg; do
 done
 
 if [[ $g -eq 1 ]]; then
-  echo "${green}------------------ greeting-service ------------------${reset}"
+  echo "${cyan}------------------ greeting-service ------------------${reset}"
   cd greeting-service
   echo "${yellow}--- maven ---${reset}"
   mvn install dockerfile:build
@@ -40,7 +40,7 @@ if [[ $g -eq 1 ]]; then
 fi
 
 if [[ $n -eq 1 ]]; then
-  echo "${green}------------------ name-service ------------------${reset}"
+  echo "${cyan}------------------ name-service ------------------${reset}"
   cd name-service
   echo "${yellow}--- maven ---${reset}"
   mvn install dockerfile:build
@@ -50,26 +50,26 @@ if [[ $n -eq 1 ]]; then
 fi
 
 if [[ $i -eq 0 ]]; then
-echo "${green}------------------ workload delete ------------------${reset}"
+echo "${cyan}------------------ workload delete ------------------${reset}"
 kubectl delete -f istio-gateway.yaml
 kubectl delete -f workload-inject.yaml
 kubectl delete -f workload.yaml
-echo "${green}------------------ workload apply ------------------${reset}"
+echo "${cyan}------------------ workload apply ------------------${reset}"
 kubectl apply -f workload.yaml
-echo "${green}------------------ get services ------------------${reset}"
+echo "${cyan}------------------ get services ------------------${reset}"
 
 elif [[ $i -eq 1 ]]; then
-echo "${green}------------------ workload-inject delete ------------------${reset}"
+echo "${cyan}------------------ workload-inject delete ------------------${reset}"
 kubectl delete -f istio-gateway.yaml
 kubectl delete -f workload-inject.yaml
 kubectl delete -f workload.yaml
 #kubectl delete -f ~/yazilim/other/tools/istio-1.1.7/install/kubernetes/istio-demo-auth.yaml
-echo "${green}------------------ workload-inject apply ------------------${reset}"
+echo "${cyan}------------------ workload-inject apply ------------------${reset}"
 #kubectl apply -f ~/yazilim/other/tools/istio-1.1.7/install/kubernetes/istio-demo-auth.yaml
 istioctl kube-inject -f workload.yaml > workload-inject.yaml
 kubectl apply -f workload-inject.yaml
 kubectl apply -f istio-gateway.yaml
-echo "${green}------------------ get services ------------------${reset}"
+echo "${cyan}------------------ get services ------------------${reset}"
 fi
 
 kubectl get services -w
